@@ -1,0 +1,30 @@
+{
+  "name": "chomenko/acl",
+  "type": "extensions",
+  "description": "ACL from Nette framework",
+  "keywords": ["ACL", "Nette", "Doctrine", "Annotation"],
+  "homepage": "https://github.com/chomenko/acl",
+  "license": [],
+  "authors": [
+    {
+      "name": "Mykola Chomenko",
+      "homepage": "http://dipcom.cz",
+      "email": "mykola.chomenko@dipcom.cz"
+    }
+  ],
+  "support": {
+    "email": "mykola.chomenko@dipcom.cz"
+  },
+  "require": {
+    "php": ">=7.1",
+    "nette/di": "^2.4",
+    "nette/application": "^2.4",
+    "kdyby/events": "^3.1",
+    "doctrine/annotations": "^1.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "Chomenko\\ACL\\": "src/"
+    }
+  }
+}
