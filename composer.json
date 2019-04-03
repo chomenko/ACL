@@ -18,6 +18,7 @@
   "require": {
     "php": ">=7.1",
     "nette/di": "^2.4",
+    "webmozart/assert": "^1.4",
     "nette/application": "^2.4",
     "kdyby/events": "^3.1",
     "doctrine/annotations": "^1.6"
