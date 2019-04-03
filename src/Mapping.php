@@ -8,8 +8,10 @@ namespace Chomenko\ACL;
 
 use Chomenko\ACL\Annotations\Access;
 use Chomenko\ACL\Annotations\Group;
+use Chomenko\ACL\Exceptions\MappingExceptions;
 use Doctrine\Common\Annotations\Reader;
 use Webmozart\Assert\Assert;
+use Chomenko\ACL\Mapping as MappingTypes;
 
 class Mapping
 {
@@ -106,16 +108,12 @@ class Mapping
 			if ($ref->isAbstract()) {
 				continue;
 			}
-			/** @var Group $group */
-			$group = $this->reader->getClassAnnotation($ref, Group::class);
-			if ($group) {
+			/** @var Group $groupAnnotation */
+			$groupAnnotation = $this->reader->getClassAnnotation($ref, Group::class);
+			if ($groupAnnotation) {
 
-				if (empty($group->getName())) {
-					$group->setName($ref->getShortName());
-				}
+				$group = new MappingTypes\Group($ref, $groupAnnotation);
 
-				Assert::alpha($group->getName(), "Class annotation in '{$class}' @Group must by only letters");
-				$group->setClassName($class);
 				foreach ($this->getMethods($ref) as $method) {
 
 					$type = $method["type"];
@@ -123,21 +121,39 @@ class Mapping
 					/** @var \ReflectionMethod $method */
 					$method = $method["reflection"];
 
-					/** @var Access $access */
-					if ($access = $this->reader->getMethodAnnotation($method, Access::class)) {
-						$access->setType($type);
-						$access->setMethod($method);
-						$access->setSuffix(lcfirst($suffix));
-						if (!$access->getName()) {
-							$access->setName(lcfirst($suffix));
-						}
-						$group->addAccess($access);
+					/** @var Access $accessAnnotation */
+					if ($accessAnnotation = $this->reader->getMethodAnnotation($method, Access::class)) {
+						$access = new MappingTypes\Access($method, $accessAnnotation, $type, lcfirst($suffix));
+						$group->addAccession($access);
 					}
 				}
-				$groups[] = $group;
+				$groups[$class] = [
+					"group" => $group,
+					"parent" => $groupAnnotation->parent,
+				];
 			}
 		}
-		return $groups;
+
+		$list = [];
+
+		foreach ($groups as $group) {
+			if (empty($group["parent"])) {
+				$list[] = $group["group"];
+				continue;
+			}
+
+			if (!array_key_exists($group["parent"], $groups)) {
+				throw MappingExceptions::groupUndefine($group["parent"]);
+			}
+
+			/** @var MappingTypes\Group $parent */
+			$parent = $groups[$group["parent"]]["group"];
+			$group = $group["group"];
+			$parent->addChildren($group);
+			$parent->setParent($parent);
+		}
+
+		return $list;
 	}
 
 	/**
@@ -169,12 +185,15 @@ class Mapping
 
 	/**
 	 * @param string $className
-	 * @return Group|null
+	 * @return MappingTypes\Group|null
 	 */
-	public function getGroupByClass(string $className): ?Group
+	public function getGroupByClass(string $className): ?MappingTypes\Group
 	{
 		foreach ($this->getGroups() as $group) {
 			if ($group->getClassName() === $className) {
+				return $group;
+			}
+			if ($group = $group->getGroupByClass($className)) {
 				return $group;
 			}
 		}
