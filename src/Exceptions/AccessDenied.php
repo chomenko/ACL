@@ -6,6 +6,8 @@
 
 namespace Chomenko\ACL\Exceptions;
 
+use Chomenko\ACL\Signal;
+
 class AccessDenied extends \Exception
 {
 
