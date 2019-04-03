@@ -56,8 +56,8 @@ class ACLExtension extends CompilerExtension
 	{
 		$ini = $class->getMethod("initialize");
 		$name = $this->prefix('mapping');
-		$body = '$this->getService("' . $name . '")->initialize();' . "\n";
-		$body .= $ini->getBody();
+		$body = $ini->getBody();
+		$body .= '$this->getService("' . $name . '")->initialize();' . "\n";
 		$ini->setBody($body);
 	}
 

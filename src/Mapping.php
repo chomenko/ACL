@@ -10,11 +10,22 @@ use Chomenko\ACL\Annotations\Access;
 use Chomenko\ACL\Annotations\Group;
 use Chomenko\ACL\Exceptions\MappingExceptions;
 use Doctrine\Common\Annotations\Reader;
+use Nette\SmartObject;
 use Webmozart\Assert\Assert;
 use Chomenko\ACL\Mapping as MappingTypes;
 
+/**
+ *  @method onInitialize(array $groups)
+ */
 class Mapping
 {
+
+	use SmartObject;
+
+	/**
+	 * @var callable[]
+	 */
+	public $onInitialize = [];
 
 	/**
 	 * @var Config
@@ -70,6 +81,7 @@ class Mapping
 			$groups = $this->createGroups();
 			$this->config->getCache()->save("groups", $groups);
 		}
+		$this->onInitialize($groups);
 		$this->groups = $groups;
 	}
 
