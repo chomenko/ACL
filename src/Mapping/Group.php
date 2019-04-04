@@ -126,13 +126,32 @@ class Group extends AMapp
 		$this->children[] = $children;
 	}
 
-
+	/**
+	 * @param string $className
+	 * @return Group|null
+	 */
 	public function getGroupByClass(string $className): ?Group
 	{
 		foreach ($this->children as $group) {
 			if ($group->getClassName() === $className) {
 				return $group;
 			} elseif ($group = $group->getGroupByClass($className)) {
+				return $group;
+			}
+		}
+		return NULL;
+	}
+
+	/**
+	 * @param string $id
+	 * @return Group|null
+	 */
+	public function getGroupById(string $id): ?Group
+	{
+		foreach ($this->children as $group) {
+			if ($group->getId() === $id) {
+				return $group;
+			} elseif ($group = $group->getGroupById($id)) {
 				return $group;
 			}
 		}

@@ -15,7 +15,7 @@ use Webmozart\Assert\Assert;
 use Chomenko\ACL\Mapping as MappingTypes;
 
 /**
- *  @method onInitialize(array $groups)
+ *  @method onInitialize(Mapping $mapping)
  */
 class Mapping
 {
@@ -53,6 +53,22 @@ class Mapping
 	private $groups = [];
 
 	/**
+	 * @var array
+	 */
+	private $groupList = [
+		"id" => [],
+		"class" => []
+	];
+
+	/**
+	 * @var array
+	 */
+	private $accessList = [
+		"id" => [],
+		"class" => []
+	];
+
+	/**
 	 * @param Config $config
 	 * @param Reader $reader
 	 */
@@ -81,8 +97,30 @@ class Mapping
 			$groups = $this->createGroups();
 			$this->config->getCache()->save("groups", $groups);
 		}
-		$this->onInitialize($groups);
 		$this->groups = $groups;
+
+		$this->createMetaLists($groups, $groupList, $accessList);
+		$this->groupList = $groupList;
+		$this->accessList = $accessList;
+
+		$this->onInitialize($this);
+	}
+
+	/**
+	 * @param MappingTypes\Group[] $groups
+	 * @param array $list
+	 */
+	private function createMetaLists(array $groups, &$groupList = ['id' => [], "class" => []], &$accessList = ['id' => [], "class" => []])
+	{
+		foreach ($groups as $group) {
+			$groupList['id'][$group->getId()] = $group;
+			$groupList['class'][$group->getClassName()] = $group;
+			foreach ($group->getAccessions() as $access) {
+				$accessList['id'][$access->getId()] = $access;
+				$accessList['class'][$group->getClassName() . "::" . $access->getMethodName()] = $access;
+			}
+			$this->createMetaLists($group->getChildren(), $groupList, $accessList);
+		}
 	}
 
 	/**
@@ -188,11 +226,58 @@ class Mapping
 	}
 
 	/**
-	 * @return Group[]
+	 * @return array
+	 */
+	public function getGroupList(): array
+	{
+		return $this->groupList;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAccessList(): array
+	{
+		return $this->accessList;
+	}
+
+	/**
+	 * @return MappingTypes\Group[]
 	 */
 	public function getGroups(): array
 	{
 		return $this->groups;
+	}
+
+	/**
+	 * @param string $id
+	 * @return MappingTypes\Group|MappingTypes\Access|null
+	 */
+	public function findById(string $id)
+	{
+		if (array_key_exists($id, $this->groupList['id'])) {
+			return $this->groupList['id'][$id];
+		}
+
+		if (array_key_exists($id, $this->accessList['id'])) {
+			return $this->accessList['id'][$id];
+		}
+		return NULL;
+	}
+
+	/**
+	 * @param string $id
+	 * @return MappingTypes\Group|MappingTypes\Access|null
+	 */
+	public function findByClass(string $class)
+	{
+		if (array_key_exists($class, $this->groupList['class'])) {
+			return $this->groupList['class'][$id];
+		}
+		if (array_key_exists($class, $this->accessList['class'])) {
+			return $this->accessList['class'][$class];
+		}
+		return NULL;
 	}
 
 	/**
@@ -201,13 +286,44 @@ class Mapping
 	 */
 	public function getGroupByClass(string $className): ?MappingTypes\Group
 	{
-		foreach ($this->getGroups() as $group) {
-			if ($group->getClassName() === $className) {
-				return $group;
-			}
-			if ($group = $group->getGroupByClass($className)) {
-				return $group;
-			}
+		if (array_key_exists($className, $this->groupList['class'])) {
+			return $this->groupList['class'][$className];
+		}
+		return NULL;
+	}
+
+	/**
+	 * @param string $className
+	 * @return MappingTypes\Group|null
+	 */
+	public function getGroupById(string $id): ?MappingTypes\Group
+	{
+		if (array_key_exists($id, $this->groupList['id'])) {
+			return $this->groupList['id'][$id];
+		}
+		return NULL;
+	}
+
+	/**
+	 * @param string $className
+	 * @return MappingTypes\Group|null
+	 */
+	public function getAccessByClass(string $className): ?MappingTypes\Group
+	{
+		if (array_key_exists($class, $this->accessList['class'])) {
+			return $this->accessList['class'][$id];
+		}
+		return NULL;
+	}
+
+	/**
+	 * @param string $className
+	 * @return MappingTypes\Group|null
+	 */
+	public function getAccessByid(string $id): ?MappingTypes\Group
+	{
+		if (array_key_exists($class, $this->accessList['id'])) {
+			return $this->accessList['id'][$id];
 		}
 		return NULL;
 	}

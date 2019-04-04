@@ -11,6 +11,10 @@ use Nette\Application\Request;
 use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
+/**
+ *  @method onAccessVerify(Signal $signal)
+ *  @method onAccessDenied(AccessDenied $exception)
+ */
 class ACL
 {
 
