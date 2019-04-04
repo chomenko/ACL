@@ -173,7 +173,7 @@ class Mapping
 
 					/** @var Access $accessAnnotation */
 					if ($accessAnnotation = $this->reader->getMethodAnnotation($method, Access::class)) {
-						$access = new MappingTypes\Access($method, $accessAnnotation, $type, lcfirst($suffix));
+						$access = new MappingTypes\Access($group, $method, $accessAnnotation, $type, lcfirst($suffix));
 						$group->addAccession($access);
 					}
 				}
