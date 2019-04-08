@@ -9,7 +9,7 @@ namespace Chomenko\ACL\Mapping;
 use Chomenko\ACL\Annotations;
 use Webmozart\Assert\Assert;
 
-class Group extends AMapp
+class Control extends AMappingSignal
 {
 
 	/**
@@ -18,31 +18,27 @@ class Group extends AMapp
 	protected $className;
 
 	/**
-	 * @var Access[]
+	 * @var Action[]
 	 * @internal
 	 */
 	protected $accession = [];
 
 	/**
-	 * @var Group|null
-	 */
-	protected $parent;
-
-	/**
-	 * @var Group[]
+	 * @var Control[]
 	 */
 	protected $children = [];
 
 	/**
-	 * @param string $className
+	 * @param \ReflectionClass $class
+	 * @param Annotations\Control $groupAnnotation
 	 */
-	public function __construct(\ReflectionClass $class, Annotations\Group $groupAnnotation)
+	public function __construct(\ReflectionClass $class, Annotations\Control $groupAnnotation)
 	{
 		$name = $groupAnnotation->name;
 		if (empty($groupAnnotation->name)) {
 			$name = $class->getShortName();
 		}
-
+		$this->setMessage($groupAnnotation->message);
 		Assert::alpha($name, "Class annotation in '{$class->getName()}' @Group must by only letters");
 		$this->name = $name;
 
@@ -61,7 +57,7 @@ class Group extends AMapp
 	}
 
 	/**
-	 * @return Access[]
+	 * @return Action[]
 	 */
 	public function getAccessions(): array
 	{
@@ -71,9 +67,9 @@ class Group extends AMapp
 	/**
 	 * @param string $type
 	 * @param string $name
-	 * @return Access|null
+	 * @return Action|null
 	 */
-	public function getAccess(string $type, string $name): ?Access
+	public function getAccess(string $type, string $name): ?Action
 	{
 		foreach ($this->accession as $access) {
 			if ($access->getType() === $type && $access->getSuffix() === $name) {
@@ -84,33 +80,15 @@ class Group extends AMapp
 	}
 
 	/**
-	 * @param Access $accession
+	 * @param Action $accession
 	 */
-	public function addAccession(Access $accession)
+	public function addAccession(Action $accession)
 	{
 		$this->accession[] = $accession;
 	}
 
 	/**
-	 * @return Group|null
-	 */
-	public function getParent(): ?Group
-	{
-		return $this->parent;
-	}
-
-	/**
-	 * @param Group|null $parent
-	 * @internal
-	 */
-	public function setParent($parent)
-	{
-		$this->parent = $parent;
-		return $this;
-	}
-
-	/**
-	 * @return Group[]
+	 * @return Control[]
 	 */
 	public function getChildren(): array
 	{
@@ -118,19 +96,19 @@ class Group extends AMapp
 	}
 
 	/**
-	 * @param Group $children
+	 * @param Control $children
 	 * @internal
 	 */
-	public function addChildren(Group $children)
+	public function addChildren(Control $children)
 	{
 		$this->children[] = $children;
 	}
 
 	/**
 	 * @param string $className
-	 * @return Group|null
+	 * @return Control|null
 	 */
-	public function getGroupByClass(string $className): ?Group
+	public function getGroupByClass(string $className): ?Control
 	{
 		foreach ($this->children as $group) {
 			if ($group->getClassName() === $className) {
@@ -144,9 +122,9 @@ class Group extends AMapp
 
 	/**
 	 * @param string $id
-	 * @return Group|null
+	 * @return Control|null
 	 */
-	public function getGroupById(string $id): ?Group
+	public function getGroupById(string $id): ?Control
 	{
 		foreach ($this->children as $group) {
 			if ($group->getId() === $id) {

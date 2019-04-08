@@ -8,7 +8,7 @@ namespace Chomenko\ACL;
 
 use Chomenko\ACL\Annotations\Accessor;
 use Chomenko\ACL\Exceptions\AccessDenied;
-use Chomenko\ACL\Mapping\AMapp;
+use Chomenko\ACL\Mapping\AMappingSignal;
 use Nette\Application\Request;
 use Nette\Application\UI\Component;
 
@@ -16,7 +16,7 @@ class Signal
 {
 
 	/**
-	 * @var AMapp
+	 * @var AMappingSignal
 	 */
 	private $accessor;
 
@@ -37,18 +37,18 @@ class Signal
 
 	/**
 	 * @param Component $control
-	 * @param AMapp $accessor
+	 * @param AMappingSignal $accessor
 	 */
-	public function __construct(Component $control, AMapp $accessor)
+	public function __construct(Component $control, AMappingSignal $accessor)
 	{
 		$this->component = $control;
 		$this->accessor = $accessor;
 	}
 
 	/**
-	 * @return AMapp
+	 * @return AMappingSignal
 	 */
-	public function getAccessor(): AMapp
+	public function getAccessor(): AMappingSignal
 	{
 		return $this->accessor;
 	}

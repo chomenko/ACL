@@ -6,12 +6,11 @@
 
 namespace Chomenko\ACL;
 
-use Chomenko\ACL\Annotations\Access;
-use Chomenko\ACL\Annotations\Group;
+use Chomenko\ACL\Annotations\Action;
+use Chomenko\ACL\Annotations\Control;
 use Chomenko\ACL\Exceptions\MappingExceptions;
 use Doctrine\Common\Annotations\Reader;
 use Nette\SmartObject;
-use Webmozart\Assert\Assert;
 use Chomenko\ACL\Mapping as MappingTypes;
 
 /**
@@ -48,7 +47,7 @@ class Mapping
 	];
 
 	/**
-	 * @var Group[]
+	 * @var Control[]
 	 */
 	private $groups = [];
 
@@ -57,7 +56,7 @@ class Mapping
 	 */
 	private $groupList = [
 		"id" => [],
-		"class" => []
+		"class" => [],
 	];
 
 	/**
@@ -65,7 +64,7 @@ class Mapping
 	 */
 	private $accessList = [
 		"id" => [],
-		"class" => []
+		"class" => [],
 	];
 
 	/**
@@ -107,8 +106,9 @@ class Mapping
 	}
 
 	/**
-	 * @param MappingTypes\Group[] $groups
-	 * @param array $list
+	 * @param MappingTypes\Control[] $groups
+	 * @param array $groupList
+	 * @param array $accessList
 	 */
 	private function createMetaLists(array $groups, &$groupList = ['id' => [], "class" => []], &$accessList = ['id' => [], "class" => []])
 	{
@@ -147,7 +147,7 @@ class Mapping
 	}
 
 	/**
-	 * @return Group[]
+	 * @return Control[]
 	 * @throws \ReflectionException
 	 */
 	protected function createGroups(): array
@@ -158,11 +158,11 @@ class Mapping
 			if ($ref->isAbstract()) {
 				continue;
 			}
-			/** @var Group $groupAnnotation */
-			$groupAnnotation = $this->reader->getClassAnnotation($ref, Group::class);
+			/** @var Control $groupAnnotation */
+			$groupAnnotation = $this->reader->getClassAnnotation($ref, Control::class);
 			if ($groupAnnotation) {
 
-				$group = new MappingTypes\Group($ref, $groupAnnotation);
+				$group = new MappingTypes\Control($ref, $groupAnnotation);
 
 				foreach ($this->getMethods($ref) as $method) {
 
@@ -171,9 +171,9 @@ class Mapping
 					/** @var \ReflectionMethod $method */
 					$method = $method["reflection"];
 
-					/** @var Access $accessAnnotation */
-					if ($accessAnnotation = $this->reader->getMethodAnnotation($method, Access::class)) {
-						$access = new MappingTypes\Access($group, $method, $accessAnnotation, $type, lcfirst($suffix));
+					/** @var Action $accessAnnotation */
+					if ($accessAnnotation = $this->reader->getMethodAnnotation($method, Action::class)) {
+						$access = new MappingTypes\Action($group, $method, $accessAnnotation, $type, lcfirst($suffix));
 						$group->addAccession($access);
 					}
 				}
@@ -196,7 +196,7 @@ class Mapping
 				throw MappingExceptions::groupUndefine($group["parent"]);
 			}
 
-			/** @var MappingTypes\Group $parent */
+			/** @var MappingTypes\Control $parent */
 			$parent = $groups[$group["parent"]]["group"];
 			$group = $group["group"];
 			$parent->addChildren($group);
@@ -226,6 +226,14 @@ class Mapping
 	}
 
 	/**
+	 * @return MappingTypes\AMappingSignal[]
+	 */
+	public function getList(): array
+	{
+		return $this->groupList['id'] + $this->accessList['id'];
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getGroupList(): array
@@ -242,7 +250,7 @@ class Mapping
 	}
 
 	/**
-	 * @return MappingTypes\Group[]
+	 * @return MappingTypes\Control[]
 	 */
 	public function getGroups(): array
 	{
@@ -251,7 +259,7 @@ class Mapping
 
 	/**
 	 * @param string $id
-	 * @return MappingTypes\Group|MappingTypes\Access|null
+	 * @return MappingTypes\Control|MappingTypes\Action|null
 	 */
 	public function findById(string $id)
 	{
@@ -266,13 +274,13 @@ class Mapping
 	}
 
 	/**
-	 * @param string $id
-	 * @return MappingTypes\Group|MappingTypes\Access|null
+	 * @param string $class
+	 * @return MappingTypes\Control|MappingTypes\Action|null
 	 */
 	public function findByClass(string $class)
 	{
 		if (array_key_exists($class, $this->groupList['class'])) {
-			return $this->groupList['class'][$id];
+			return $this->groupList['class'][$class];
 		}
 		if (array_key_exists($class, $this->accessList['class'])) {
 			return $this->accessList['class'][$class];
@@ -282,9 +290,9 @@ class Mapping
 
 	/**
 	 * @param string $className
-	 * @return MappingTypes\Group|null
+	 * @return MappingTypes\Control|null
 	 */
-	public function getGroupByClass(string $className): ?MappingTypes\Group
+	public function getGroupByClass(string $className): ?MappingTypes\Control
 	{
 		if (array_key_exists($className, $this->groupList['class'])) {
 			return $this->groupList['class'][$className];
@@ -293,10 +301,10 @@ class Mapping
 	}
 
 	/**
-	 * @param string $className
-	 * @return MappingTypes\Group|null
+	 * @param string $id
+	 * @return MappingTypes\Control|null
 	 */
-	public function getGroupById(string $id): ?MappingTypes\Group
+	public function getGroupById(string $id): ?MappingTypes\Control
 	{
 		if (array_key_exists($id, $this->groupList['id'])) {
 			return $this->groupList['id'][$id];
@@ -306,23 +314,23 @@ class Mapping
 
 	/**
 	 * @param string $className
-	 * @return MappingTypes\Group|null
+	 * @return MappingTypes\Control|null
 	 */
-	public function getAccessByClass(string $className): ?MappingTypes\Group
+	public function getAccessByClass(string $className): ?MappingTypes\Control
 	{
-		if (array_key_exists($class, $this->accessList['class'])) {
-			return $this->accessList['class'][$id];
+		if (array_key_exists($className, $this->accessList['class'])) {
+			return $this->accessList['class'][$className];
 		}
 		return NULL;
 	}
 
 	/**
-	 * @param string $className
-	 * @return MappingTypes\Group|null
+	 * @param string $id
+	 * @return MappingTypes\Control|null
 	 */
-	public function getAccessByid(string $id): ?MappingTypes\Group
+	public function getAccessById(string $id): ?MappingTypes\Control
 	{
-		if (array_key_exists($class, $this->accessList['id'])) {
+		if (array_key_exists($id, $this->accessList['id'])) {
 			return $this->accessList['id'][$id];
 		}
 		return NULL;

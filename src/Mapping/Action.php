@@ -8,12 +8,8 @@ namespace Chomenko\ACL\Mapping;
 
 use Chomenko\ACL\Annotations;
 
-class Access extends AMapp
+class Action extends AMappingSignal
 {
-	/**
-	 * @var Group
-	 */
-	private $group;
 
 	/**
 	 * @var string
@@ -31,20 +27,21 @@ class Access extends AMapp
 	private $suffix;
 
 	/**
-	 * @param Group $group
+	 * @param Control $control
 	 * @param \ReflectionMethod $method
-	 * @param Annotations\Access $access
+	 * @param Annotations\Action $access
 	 * @param string $type
 	 * @param string $suffix
 	 */
-	public function __construct(Group $group, \ReflectionMethod $method, Annotations\Access $access, string $type, string $suffix)
+	public function __construct(Control $control, \ReflectionMethod $method, Annotations\Action $access, string $type, string $suffix)
 	{
 		$this->name = $access->name;
 		if (!$access->name) {
 			$this->name = lcfirst($suffix);
 		}
 
-		$this->group = $group;
+		$this->setParent($control);
+		$this->setMessage($access->message);
 		$this->type = $type;
 		$this->suffix = $suffix;
 		$this->description = $access->description;
@@ -77,14 +74,6 @@ class Access extends AMapp
 	public function getSuffix(): string
 	{
 		return $this->suffix;
-	}
-
-	/**
-	 * @return Group
-	 */
-	public function getGroup(): Group
-	{
-		return $this->group;
 	}
 
 }

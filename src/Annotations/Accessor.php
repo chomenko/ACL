@@ -20,6 +20,11 @@ abstract class Accessor
 	public $description;
 
 	/**
+	 * @var string
+	 */
+	public $message = "You are not sufficiently entitled to access this section.";
+
+	/**
 	 * @var array
 	 */
 	public $options = [];

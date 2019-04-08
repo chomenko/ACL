@@ -12,7 +12,7 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target("METHOD")
  */
-class Access extends Accessor
+class Action extends Accessor
 {
 
 }

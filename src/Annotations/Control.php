@@ -12,11 +12,11 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target("CLASS")
  */
-class Group extends Accessor
+class Control extends Accessor
 {
 
 	/**
-	 * Parent group class
+	 * Parent Control class
 	 * @var string
 	 */
 	public $parent;
