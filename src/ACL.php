@@ -88,7 +88,7 @@ class ACL
 				];
 
 				foreach ($types as $type => $suffix) {
-					if (empty($suffix) || !($access = $group->getAccess($type, $suffix))) {
+					if (empty($suffix) || !($access = $group->getAccess($type, lcfirst($suffix)))) {
 						continue;
 					}
 					$typeSignal = new Signal($presenter, $access);
