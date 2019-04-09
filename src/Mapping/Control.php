@@ -42,7 +42,12 @@ class Control extends AMappingSignal
 		Assert::alpha($name, "Class annotation in '{$class->getName()}' @Group must by only letters");
 		$this->name = $name;
 
-		$this->id = hash("crc32b", $class->getFileName());
+		$id = $groupAnnotation->id;
+		if (!$id) {
+			$id = hash("crc32b", $class->getFileName());
+		}
+
+		$this->id = $id;
 		$this->className = $class->getName();
 		$this->description = $groupAnnotation->description;
 		$this->options = $groupAnnotation->options;

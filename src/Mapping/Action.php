@@ -48,8 +48,19 @@ class Action extends AMappingSignal
 		$this->options = $access->options;
 
 		$className = $method->getDeclaringClass()->getName();
-		$this->id = hash("crc32b", $className . "::" . $method->getName());
+
+		$id = $access->id;
+		if (!$id) {
+			$id = hash("crc32b", $className . "::" . $method->getName());
+		}
+
+		$this->id = $id;
 		$this->methodName = $method->getName();
+	}
+
+	public function getClassName()
+	{
+		$this->getParent()->getClassName();
 	}
 
 	/**

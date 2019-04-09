@@ -10,6 +10,12 @@ abstract class Accessor
 {
 
 	/**
+	 * Unique id
+	 * @var string
+	 */
+	public $id;
+
+	/**
 	 * @var string
 	 */
 	public $name;

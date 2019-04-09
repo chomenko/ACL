@@ -152,6 +152,7 @@ class Mapping
 	 */
 	protected function createGroups(): array
 	{
+		$list = [];
 		$groups = [];
 		foreach ($this->findClassByInterfaces($this->config->getInterfacesMapping()) as $class) {
 			$ref = new \ReflectionClass($class);
@@ -164,6 +165,10 @@ class Mapping
 
 				$group = new MappingTypes\Control($ref, $groupAnnotation);
 
+				if (array_key_exists($group->getId(), $list)) {
+					throw MappingExceptions::duplicitySignalId($list[$group->getId()], $group);
+				}
+				$list[$group->getId()] = $group;
 				foreach ($this->getMethods($ref) as $method) {
 
 					$type = $method["type"];
@@ -174,6 +179,10 @@ class Mapping
 					/** @var Action $accessAnnotation */
 					if ($accessAnnotation = $this->reader->getMethodAnnotation($method, Action::class)) {
 						$access = new MappingTypes\Action($group, $method, $accessAnnotation, $type, lcfirst($suffix));
+						if (array_key_exists($access->getId(), $list)) {
+							throw MappingExceptions::duplicitySignalId($list[$access->getId()], $access);
+						}
+						$list[$access->getId()] = $access;
 						$group->addAccession($access);
 					}
 				}
@@ -193,7 +202,7 @@ class Mapping
 			}
 
 			if (!array_key_exists($group["parent"], $groups)) {
-				throw MappingExceptions::groupUndefine($group["parent"]);
+				throw MappingExceptions::groupUndefined($group["parent"]);
 			}
 
 			/** @var MappingTypes\Control $parent */
