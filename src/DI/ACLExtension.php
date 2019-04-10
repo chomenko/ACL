@@ -9,6 +9,7 @@ namespace Chomenko\ACL\DI;
 use Chomenko\ACL\ACL;
 use Chomenko\ACL\Application\Listener;
 use Chomenko\ACL\Config;
+use Chomenko\ACL\Macros\Latte;
 use Chomenko\ACL\Mapping;
 use Kdyby\Events\DI\EventsExtension;
 use Nette\ComponentModel\IContainer;
@@ -47,6 +48,15 @@ class ACLExtension extends CompilerExtension
 			->addTag(EventsExtension::TAG_SUBSCRIBER);
 
 		Config::$compile = TRUE;
+	}
+
+	public function beforeCompile()
+	{
+		$builder = $this->getContainerBuilder();
+		$engine = $builder->getDefinition('nette.latteFactory');
+		$engine->addSetup( Latte::class . '::install(?, ?)', [
+			"@self", $builder->getDefinition($this->prefix("acl"))
+		]);
 	}
 
 	/**

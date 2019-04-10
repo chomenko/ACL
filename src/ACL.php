@@ -7,7 +7,10 @@
 namespace Chomenko\ACL;
 
 use Chomenko\ACL\Exceptions\AccessDenied;
+use Chomenko\ACL\Mapping\AMappingSignal;
+use Nette\Application\IPresenterFactory;
 use Nette\Application\Request;
+use Nette\Application\UI\InvalidLinkException;
 use Nette\Application\UI\Presenter;
 use Nette\SmartObject;
 
@@ -36,11 +39,18 @@ class ACL
 	private $mapping;
 
 	/**
-	 * @param Mapping $mapping
+	 * @var IPresenterFactory
 	 */
-	public function __construct(Mapping $mapping)
+	private $presenterFactory;
+
+	/**
+	 * @param Mapping $mapping
+	 * @param IPresenterFactory $presenterFactory
+	 */
+	public function __construct(Mapping $mapping, IPresenterFactory $presenterFactory)
 	{
 		$this->mapping = $mapping;
+		$this->presenterFactory = $presenterFactory;
 	}
 
 	/**
@@ -88,7 +98,7 @@ class ACL
 				];
 
 				foreach ($types as $type => $suffix) {
-					if (empty($suffix) || !($access = $group->getAccess($type, lcfirst($suffix)))) {
+					if (empty($suffix) || !($access = $group->getAction($type, lcfirst($suffix)))) {
 						continue;
 					}
 					$typeSignal = new Signal($presenter, $access);
@@ -181,6 +191,59 @@ class ACL
 	public function getSignalByObject(object $object)
 	{
 		return $this->getMapping()->findByClass(get_class($object));
+	}
+
+	/**
+	 * Returned AMappingSignal by link destination $dest = string "[Admin=module]:[User=presenter]:[RemoveUser!=handle or action]"
+	 * @param string$dest
+	 * @return AMappingSignal|Mapping\Action|Mapping\Control|null
+	 * @throws InvalidLinkException
+	 * @throws \Nette\Application\InvalidPresenterException
+	 */
+	public function getMappingItemByDest(string $dest): ?AMappingSignal
+	{
+		if (!preg_match('~^([\w:]+):(\w*+)(!)?()\z~', $dest, $m)) {
+			throw new InvalidLinkException("Invalid link destination '$dest'.");
+		}
+		list(, $presenter, $action, $type) = $m;
+
+		try {
+			$class = $this->presenterFactory ? $this->presenterFactory->getPresenterClass($presenter) : NULL;
+		} catch (InvalidPresenterException $e) {
+			throw new InvalidLinkException($e->getMessage(), 0, $e);
+		}
+
+		$control = $this->mapping->findByClass($class);
+		if (!$control) {
+			return NULL;
+		}
+
+		$actionItem = $control->getActionByMethod($class::formatActionMethod($action));
+
+		if (!$actionItem) {
+			$actionItem = $control->getActionByMethod($class::formatRenderMethod($action));
+		}
+
+		if (!$actionItem && $type === "!") {
+			$actionItem = $control->getActionByMethod($class::formatSignalMethod($action));
+		}
+
+		return $actionItem ? $actionItem : $control;
+	}
+
+	/**
+	 * @param string $dest
+	 * @return bool
+	 * @throws InvalidLinkException
+	 * @throws \Nette\Application\InvalidPresenterException
+	 */
+	public function isLinkAccessed(string $dest): bool
+	{
+		$item = $this->getMappingItemByDest($dest);
+		if ($item) {
+			return $item->isAllowed(TRUE);
+		}
+		return TRUE;
 	}
 
 }

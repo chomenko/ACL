@@ -115,7 +115,7 @@ class Mapping
 		foreach ($groups as $group) {
 			$groupList['id'][$group->getId()] = $group;
 			$groupList['class'][$group->getClassName()] = $group;
-			foreach ($group->getAccessions() as $access) {
+			foreach ($group->getActions() as $access) {
 				$accessList['id'][$access->getId()] = $access;
 				$accessList['class'][$group->getClassName() . "::" . $access->getMethodName()] = $access;
 			}
@@ -183,7 +183,7 @@ class Mapping
 							throw MappingExceptions::duplicitySignalId($list[$access->getId()], $access);
 						}
 						$list[$access->getId()] = $access;
-						$group->addAccession($access);
+						$group->addAction($access);
 					}
 				}
 				$groups[$class] = [
@@ -209,7 +209,7 @@ class Mapping
 			$parent = $groups[$group["parent"]]["group"];
 			$group = $group["group"];
 			$parent->addChildren($group);
-			$parent->setParent($parent);
+			$group->setParent($parent);
 		}
 
 		return $list;

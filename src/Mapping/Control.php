@@ -21,7 +21,7 @@ class Control extends AMappingSignal
 	 * @var Action[]
 	 * @internal
 	 */
-	protected $accession = [];
+	protected $actions = [];
 
 	/**
 	 * @var Control[]
@@ -64,9 +64,9 @@ class Control extends AMappingSignal
 	/**
 	 * @return Action[]
 	 */
-	public function getAccessions(): array
+	public function getActions(): array
 	{
-		return $this->accession;
+		return $this->actions;
 	}
 
 	/**
@@ -74,11 +74,25 @@ class Control extends AMappingSignal
 	 * @param string $name
 	 * @return Action|null
 	 */
-	public function getAccess(string $type, string $name): ?Action
+	public function getAction(string $type, string $name): ?Action
 	{
-		foreach ($this->accession as $access) {
-			if ($access->getType() === $type && $access->getSuffix() === $name) {
-				return $access;
+		foreach ($this->actions as $action) {
+			if ($action->getType() === $type && $action->getSuffix() === $name) {
+				return $action;
+			}
+		}
+		return NULL;
+	}
+
+	/**
+	 * @param string $method
+	 * @return Action|null
+	 */
+	public function getActionByMethod(string $method): ?Action
+	{
+		foreach ($this->actions as $action) {
+			if ($action->getMethodName() === $method) {
+				return $action;
 			}
 		}
 		return NULL;
@@ -87,9 +101,9 @@ class Control extends AMappingSignal
 	/**
 	 * @param Action $accession
 	 */
-	public function addAccession(Action $accession)
+	public function addAction(Action $accession)
 	{
-		$this->accession[] = $accession;
+		$this->actions[] = $accession;
 	}
 
 	/**

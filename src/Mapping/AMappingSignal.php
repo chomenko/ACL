@@ -95,10 +95,19 @@ abstract class AMappingSignal
 	}
 
 	/**
+	 * @param bool $parents checks all parent
 	 * @return bool
 	 */
-	public function isAllowed(): bool
+	public function isAllowed(bool $parents = FALSE): bool
 	{
+		if ($parents) {
+			if ($this->allowed) {
+				if ($this->parent) {
+					return $this->parent->isAllowed(TRUE);
+				}
+				return $this->allowed;
+			}
+		}
 		return $this->allowed;
 	}
 
