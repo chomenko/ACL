@@ -174,4 +174,13 @@ class ACL
 		return $this->mapping;
 	}
 
+	/**
+	 * @param object $object
+	 * @return Mapping\Action|Mapping\Control|null
+	 */
+	public function getSignalByObject(object $object)
+	{
+		return $this->getMapping()->findByClass(get_class($object));
+	}
+
 }
