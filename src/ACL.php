@@ -218,10 +218,10 @@ class ACL
 			return NULL;
 		}
 
-		$actionItem = $control->getActionByMethod($class::formatActionMethod($action));
+		$actionItem = $control->getActionByMethod($class::formatActionMethod(ucfirst($action)));
 
 		if (!$actionItem) {
-			$actionItem = $control->getActionByMethod($class::formatRenderMethod($action));
+			$actionItem = $control->getActionByMethod($class::formatRenderMethod(ucfirst($action)));
 		}
 
 		if (!$actionItem && $type === "!") {
