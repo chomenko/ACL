@@ -225,10 +225,24 @@ class ACL
 		}
 
 		if (!$actionItem && $type === "!") {
-			$actionItem = $control->getActionByMethod($class::formatSignalMethod($action));
+			$actionItem = $control->getActionByMethod($class::formatSignalMethod(ucfirst($action)));
 		}
 
 		return $actionItem ? $actionItem : $control;
+	}
+
+	/**
+	 * @param string $className
+	 * @return bool
+	 */
+	public function isClassAccessed(string $className): bool
+	{
+		$item = $this->getMapping()->findByClass($className);
+		if ($item && $item->isAllowed(TRUE)) {
+			return TRUE;
+		}
+
+		return FALSE;
 	}
 
 	/**

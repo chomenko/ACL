@@ -41,6 +41,7 @@ class Latte extends MacroSet
 		$engine->addProvider("acl", $acl);
 		$me = new static($engine->getCompiler(), $acl);
 		$me->addMacro('isLinkAccessed', NULL, [$me, 'isLinkAccessed']);
+		$me->addMacro('isClassAccessed', NULL, [$me, 'isClassAccessed']);
 		return $me;
 	}
 
@@ -54,6 +55,22 @@ class Latte extends MacroSet
 	{
 		$dest = trim((string)$node->args, '\'"');
 		$content = '<?php if ($this->getEngine()->getProviders()["acl"]->isLinkAccessed("' . $dest . '")) { ?>';
+		$content .= $node->content;
+		$content .= '<?php } ?>';
+		$node->content = $content;
+		return $node;
+	}
+
+	/**
+	 * @param MacroNode $node
+	 * @param PhpWriter $writer
+	 * @return MacroNode
+	 * @throws \Latte\CompileException
+	 */
+	public function isClassAccessed(MacroNode $node, PhpWriter $writer)
+	{
+		$class = trim((string)$node->args, '\'"');
+		$content = '<?php if ($this->getEngine()->getProviders()["acl"]->isClassAccessed("' . $class . '")) { ?>';
 		$content .= $node->content;
 		$content .= '<?php } ?>';
 		$node->content = $content;
