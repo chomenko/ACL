@@ -44,7 +44,7 @@ class Control extends AMappingSignal
 
 		$id = $groupAnnotation->id;
 		if (!$id) {
-			$id = hash("crc32b", $class->getFileName());
+			$id = hash("crc32b", $class->getName());
 		}
 
 		$this->id = $id;
