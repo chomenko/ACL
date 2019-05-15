@@ -260,4 +260,13 @@ class ACL
 		return TRUE;
 	}
 
+	/**
+	 * @param string $rule
+	 * @return bool
+	 */
+	public function isAllowedRule(string $rule)
+	{
+		return array_key_exists($rule, $this->mapping->getAllowedRules());
+	}
+
 }
