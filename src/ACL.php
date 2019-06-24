@@ -241,7 +241,24 @@ class ACL
 		if ($item && $item->isAllowed(TRUE)) {
 			return TRUE;
 		}
+		return FALSE;
+	}
 
+	/**
+	 * @param string $className
+	 * @param string $actionName
+	 * @return bool
+	 */
+	public function isActionAccessed(string $className, string $actionName): bool
+	{
+		$item = $this->getMapping()->findByClass($className);
+		if ($item) {
+			foreach ($item->getActions() as $action) {
+				if ($action->getSuffix() == $actionName) {
+					return $action->isAllowed(TRUE);
+				}
+			}
+		}
 		return FALSE;
 	}
 
