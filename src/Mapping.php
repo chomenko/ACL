@@ -68,6 +68,11 @@ class Mapping
 	];
 
 	/**
+	 * @var array
+	 */
+	private $allowedRules = [];
+
+	/**
 	 * @param Config $config
 	 * @param Reader $reader
 	 */
@@ -343,6 +348,34 @@ class Mapping
 			return $this->accessList['id'][$id];
 		}
 		return NULL;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAllowedRules(): array
+	{
+		return $this->allowedRules;
+	}
+
+	/**
+	 * @param string $allowedRule
+	 * @return $this
+	 */
+	public function addAllowedRule(string $allowedRule)
+	{
+		$this->allowedRules[$allowedRule] = $allowedRule;
+		return $this;
+	}
+
+	/**
+	 * @param string $rule
+	 */
+	public function removeAllowedRule(string $rule)
+	{
+		if (isset($this->allowedRules[$rule])) {
+			unset($this->allowedRules[$rule]);
+		}
 	}
 
 }

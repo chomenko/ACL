@@ -10,7 +10,7 @@ use Chomenko\ACL\Mapping\Action;
 use Chomenko\ACL\Mapping\AMappingSignal;
 use Chomenko\ACL\Mapping\Control;
 
-class MappingExceptions extends \Exceptions
+class MappingExceptions extends \Exception
 {
 
 	/**
