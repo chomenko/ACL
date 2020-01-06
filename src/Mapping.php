@@ -137,16 +137,23 @@ class Mapping
 		$methods = [];
 		foreach ($class->getMethods() as $method) {
 			$name = $method->getName();
+			$annotation = $this->reader->getMethodAnnotation($method, Action::class);
+			if (!$annotation) {
+				break;
+			}
+			$define = [
+				"type" => "other",
+				"reflection" => $method,
+				"suffix" => NULL,
+				"annotation" => $annotation,
+			];
 			foreach ($this->methodType as $type) {
 				if (substr($name, 0, strlen($type)) === $type) {
-					$methods[] = [
-						"type" => $type,
-						"reflection" => $method,
-						"suffix" => substr($name, strlen($type), strlen($name))
-					];
+					$define['type'] = $type;
 					break;
 				}
 			}
+			$methods[] = $define;
 		}
 		return $methods;
 	}
@@ -178,18 +185,16 @@ class Mapping
 
 					$type = $method["type"];
 					$suffix = $method["suffix"];
+					$accessAnnotation = $method['annotation'];
 					/** @var \ReflectionMethod $method */
 					$method = $method["reflection"];
 
-					/** @var Action $accessAnnotation */
-					if ($accessAnnotation = $this->reader->getMethodAnnotation($method, Action::class)) {
-						$access = new MappingTypes\Action($group, $method, $accessAnnotation, $type, lcfirst($suffix));
-						if (array_key_exists($access->getId(), $list)) {
-							throw MappingExceptions::duplicitySignalId($list[$access->getId()], $access);
-						}
-						$list[$access->getId()] = $access;
-						$group->addAction($access);
+					$access = new MappingTypes\Action($group, $method, $accessAnnotation, $type, lcfirst($suffix));
+					if (array_key_exists($access->getId(), $list)) {
+						throw MappingExceptions::duplicitySignalId($list[$access->getId()], $access);
 					}
+					$list[$access->getId()] = $access;
+					$group->addAction($access);
 				}
 				$groups[$class] = [
 					"group" => $group,

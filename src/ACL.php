@@ -254,7 +254,7 @@ class ACL
 		$item = $this->getMapping()->findByClass($className);
 		if ($item) {
 			foreach ($item->getActions() as $action) {
-				if ($action->getSuffix() == $actionName) {
+				if ($action->getSuffix() == $actionName || ($action->getType() === "other" && $action->getName() === $actionName)) {
 					return $action->isAllowed(TRUE);
 				}
 			}
