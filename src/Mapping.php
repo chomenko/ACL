@@ -139,7 +139,7 @@ class Mapping
 			$name = $method->getName();
 			$annotation = $this->reader->getMethodAnnotation($method, Action::class);
 			if (!$annotation) {
-				break;
+				continue;
 			}
 			$define = [
 				"type" => "other",
@@ -150,6 +150,7 @@ class Mapping
 			foreach ($this->methodType as $type) {
 				if (substr($name, 0, strlen($type)) === $type) {
 					$define['type'] = $type;
+					$define['suffix'] = substr($name, strlen($type), strlen($name));
 					break;
 				}
 			}
